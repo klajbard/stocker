@@ -5,8 +5,8 @@
     "start": "HOSTNAME=\"http://localhost:3000\"  gulp watch",
     "build": "HOSTNAME=\"https://stock.klajbar.com\" gulp",
     "deploy": "sls deploy --verbose",
-    "format": "prettier '{,src}/**/*.{html,js,css}' --write",
-    "lint": "eslint src/**/*.js"
+    "format": "prettier '{,src}/**/*.{html,js,ts,css}' --write",
+    "lint": "eslint src/**/*.{js,ts}"
   },
   "dependencies": {
     "chart.js": "^3.9.1",
@@ -14,6 +14,8 @@
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.5.0",
+    "@typescript-eslint/eslint-plugin": "^5.39.0",
+    "@typescript-eslint/parser": "^5.39.0",
     "@webcomponents/webcomponentsjs": "^2.6.0",
     "browser-sync": "^2.27.7",
     "clean-css": "^5.2.4",

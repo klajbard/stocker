@@ -1,16 +1,16 @@
 import { LitElement, html, css } from "lit";
-import {customElement} from 'lit/decorators.js';
+import { customElement } from "lit/decorators.js";
 
 interface Position {
-  balance: number,
-  maxloss: number,
-  entry: number,
-  stoploss: number,
-  maxdollarloss: number,
-  stocktobuy: number,
+  balance: number;
+  maxloss: number;
+  entry: number;
+  stoploss: number;
+  maxdollarloss: number;
+  stocktobuy: number;
 }
 
-@customElement('position-size')
+@customElement("position-size")
 export class PositionSize extends LitElement {
   data: Position = {
     balance: 0,
@@ -74,14 +74,14 @@ export class PositionSize extends LitElement {
       this.data.stocktobuy = 0;
     }
 
-    if(this.stocktobuyElem) {
+    if (this.stocktobuyElem) {
       this.stocktobuyElem.value = String(this.data.stocktobuy);
     }
   }
 
   firstUpdated() {
     if (!this.shadowRoot) {
-      return
+      return;
     }
     this.balanceElem = this.shadowRoot.querySelector("[name='balance']");
     this.maxlossElem = this.shadowRoot.querySelector("[name='maxloss']");

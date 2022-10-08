@@ -1,7 +1,7 @@
 import { LitElement, html, css, PropertyValues } from "lit";
-import {customElement, state, property} from 'lit/decorators.js';
+import { customElement, state, property } from "lit/decorators.js";
 
-@customElement('stocker-input')
+@customElement("stocker-input")
 export class StockerInput extends LitElement {
   @property({ type: String, reflect: true })
   name?: string;
@@ -12,11 +12,11 @@ export class StockerInput extends LitElement {
   @property({ type: Boolean, reflect: true })
   right?: boolean;
 
-  @property({ type: String})
+  @property({ type: String })
   label?: string;
-  @property({ type: String})
+  @property({ type: String })
   value?: string;
-  @property({ type: String})
+  @property({ type: String })
   type?: string;
 
   @state()

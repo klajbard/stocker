@@ -1,16 +1,29 @@
-import { ArcElement, Chart, ChartConfiguration, DefaultDataPoint, DoughnutController, Legend, Tooltip, TooltipItem } from "chart.js";
+import {
+  ArcElement,
+  Chart,
+  ChartConfiguration,
+  DefaultDataPoint,
+  DoughnutController,
+  Legend,
+  Tooltip,
+  TooltipItem,
+} from "chart.js";
 import { LitElement, html, css } from "lit";
-import {customElement} from 'lit/decorators.js';
+import { customElement } from "lit/decorators.js";
 
-Chart.register(ArcElement, DoughnutController, Legend, Tooltip)
+Chart.register(ArcElement, DoughnutController, Legend, Tooltip);
 
 interface Portfolio {
-  ticker: string
-  price: string
-  amount: string
+  ticker: string;
+  price: string;
+  amount: string;
 }
 
-const chartConfig: ChartConfiguration<"doughnut", DefaultDataPoint<"doughnut">, string> = {
+const chartConfig: ChartConfiguration<
+  "doughnut",
+  DefaultDataPoint<"doughnut">,
+  string
+> = {
   type: "doughnut",
   data: {
     labels: [],
@@ -48,7 +61,7 @@ const chartConfig: ChartConfiguration<"doughnut", DefaultDataPoint<"doughnut">, 
   },
 };
 
-@customElement('portfolio-data')
+@customElement("portfolio-data")
 export class PortfolioData extends LitElement {
   chart?: Chart;
   data: Portfolio[] = [];
@@ -94,16 +107,24 @@ export class PortfolioData extends LitElement {
   }
 
   addData(label: string, data: number) {
-    this.chart?.data.labels?.push(label);
-    this.chart?.data.datasets?.forEach((dataset) => {
-      dataset.data?.push(data);
-    });
+    if (!this.chart?.data.datasets) {
+      return;
+    }
+    const labelIndex =
+      this.chart?.data.labels?.findIndex((dataLabel) => dataLabel === label) ??
+      -1;
+    if (labelIndex > -1) {
+      (this.chart.data.datasets[0].data[labelIndex] as number) += data;
+    } else {
+      this.chart?.data.labels?.push(label);
+      this.chart?.data.datasets?.[0].data?.push(data);
+    }
     this.sum = this.sum + data;
     this.chart?.update();
   }
 
   clearData() {
-    if (this.chart){
+    if (this.chart) {
       this.chart.data.labels = [];
       this.chart.data.datasets?.forEach((dataset) => {
         dataset.data = [];
@@ -115,7 +136,7 @@ export class PortfolioData extends LitElement {
 
   firstUpdated() {
     if (!this.shadowRoot) {
-      return
+      return;
     }
     this.chart = new Chart(
       this.shadowRoot?.getElementById("portfolio") as HTMLCanvasElement,
@@ -124,7 +145,7 @@ export class PortfolioData extends LitElement {
 
     const dataLS = localStorage.getItem("portfolio");
     if (dataLS) {
-      const parsedPortfolio: Portfolio[] = JSON.parse(dataLS)
+      const parsedPortfolio: Portfolio[] = JSON.parse(dataLS);
       parsedPortfolio.forEach((portfolioElem) => {
         this.data.push(portfolioElem);
         this.addData(
@@ -150,30 +171,39 @@ export class PortfolioData extends LitElement {
   }
 
   _handleResetInputs() {
-    if (this.tickerElem) this.tickerElem.value = "";
-    if (this.priceElem) this.priceElem.value = "";
-    if (this.amountElem) this.amountElem.value = "";
+    if (this.tickerElem) this.tickerElem.value = null as any;
+    if (this.priceElem) this.priceElem.value = null as any;
+    if (this.amountElem) this.amountElem.value = null as any;
   }
 
   _handleInputUpdate() {
-    if (this.addElem) this.addElem.disabled = !(
-      this.tickerElem?.value &&
-      this.priceElem?.value &&
-      this.amountElem?.value
-    );
+    if (this.addElem)
+      this.addElem.disabled = !(
+        this.tickerElem?.value &&
+        this.priceElem?.value &&
+        this.amountElem?.value
+      );
   }
 
   _handleClickAdd() {
+    if (
+      !this.tickerElem?.value ||
+      !this.priceElem?.value ||
+      !this.amountElem?.value
+    ) {
+      return;
+    }
     this.data.push({
-      ticker: this.tickerElem?.value || "",
-      price: this.priceElem?.value || "",
-      amount: this.amountElem?.value || "",
+      ticker: this.tickerElem.value,
+      price: this.priceElem.value,
+      amount: this.amountElem.value,
     });
     this.addData(
-      this.tickerElem?.value || "",
-      parseFloat(this.amountElem?.value || "0") * parseFloat(this.priceElem?.value || "0")
+      this.tickerElem.value,
+      parseFloat(this.amountElem?.value || "0") *
+        parseFloat(this.priceElem?.value || "0")
     );
-    this._handleResetInputs();
+    // this._handleResetInputs();
     this.saveDataToLS();
   }
 
@@ -184,32 +214,58 @@ export class PortfolioData extends LitElement {
   _handleClickClearLS() {
     localStorage.removeItem("portfolio");
     this.clearData();
+    this.shadowRoot?.querySelector(".table-container > table")?.remove();
   }
 
-  _handleRemoveClick = (ticker: string) => () => {
-    const indexRemove = this.data.findIndex((elem) => elem.ticker === ticker);
-    this.data.splice(indexRemove, 1);
-    this.saveDataToLS();
-    this.sum = this.data.reduce(
-      (acc, elem) => acc + parseFloat(elem.amount) * parseFloat(elem.price),
-      0
-    );
-    this.chart?.data.labels?.splice(indexRemove, 1);
-    this.chart?.data.datasets?.forEach((dataset) => {
-      dataset.data?.splice(indexRemove, 1);
-    });
-    this.chart?.update();
-  };
+  _handleRemoveClick =
+    (ticker: string, amount: string, price: string) => () => {
+      const indexToRemoveLS = this.data.findIndex(
+        (elem) =>
+          elem.ticker === ticker &&
+          elem.price === price &&
+          elem.amount === amount
+      );
+      if (indexToRemoveLS > -1) {
+        this.data.splice(indexToRemoveLS, 1);
+        this.saveDataToLS();
+      }
+      this.sum = this.data.reduce(
+        (acc, elem) => acc + parseFloat(elem.amount) * parseFloat(elem.price),
+        0
+      );
+
+      const indexToRemoveChart =
+        this.chart?.data.labels?.findIndex((label) => label === ticker) ?? -1;
+
+      if (indexToRemoveChart > -1) {
+        const totalPrice = parseFloat(amount) * parseFloat(price);
+        const elemTotalPrice = this.chart?.data.datasets[0].data[
+          indexToRemoveChart
+        ] as number;
+
+        if (elemTotalPrice > totalPrice && this.chart?.data.datasets) {
+          (this.chart.data.datasets[0].data[indexToRemoveChart] as number) -=
+            totalPrice;
+        } else {
+          this.chart?.data.labels?.splice(indexToRemoveChart, 1);
+          this.chart?.data.datasets?.[0].data?.splice(indexToRemoveChart, 1);
+        }
+        this.chart?.update();
+      }
+    };
 
   renderTableRow({ ticker, amount, price }: Portfolio) {
+    const totalPrice = parseFloat(amount) * parseFloat(price);
     return html`
       <tr>
         <td>${ticker}</td>
         <td>${amount}</td>
         <td>${price}</td>
-        <td>${(((parseFloat(amount) * parseFloat(price)) / this.sum) * 100).toFixed(2)} %</td>
+        <td>${((totalPrice / this.sum) * 100).toFixed(2)} %</td>
         <td>
-          <button @click=${this._handleRemoveClick(ticker)}>Remove</button>
+          <button @click=${this._handleRemoveClick(ticker, amount, price)}>
+            Remove
+          </button>
         </td>
       </tr>
     `;

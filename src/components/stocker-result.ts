@@ -1,11 +1,11 @@
 import { LitElement, html, css } from "lit";
-import {customElement, property} from 'lit/decorators.js';
+import { customElement, property } from "lit/decorators.js";
 
-@customElement('stocker-result')
+@customElement("stocker-result")
 export class StockerResult extends LitElement {
-  @property({ type: String, reflect: true  })
+  @property({ type: String, reflect: true })
   unit?: string;
-  @property({ type: String, reflect: true  })
+  @property({ type: String, reflect: true })
   name?: string;
   @property({ type: String })
   value?: string;
