@@ -1,17 +1,32 @@
 import { LitElement, html, css } from "lit";
+import {customElement} from 'lit/decorators.js';
 
+interface Position {
+  balance: number,
+  maxloss: number,
+  entry: number,
+  stoploss: number,
+  maxdollarloss: number,
+  stocktobuy: number,
+}
+
+@customElement('position-size')
 export class PositionSize extends LitElement {
-  constructor() {
-    super();
-    this.data = {
-      balance: 0,
-      maxloss: 0,
-      entry: 0,
-      stoploss: 0,
-      maxdollarloss: 0,
-      stocktobuy: 0,
-    };
-  }
+  data: Position = {
+    balance: 0,
+    maxloss: 0,
+    entry: 0,
+    stoploss: 0,
+    maxdollarloss: 0,
+    stocktobuy: 0,
+  };
+  balanceElem?: HTMLInputElement | null;
+  maxlossElem?: HTMLInputElement | null;
+  entryElem?: HTMLInputElement | null;
+  stoplossElem?: HTMLInputElement | null;
+  maxdollarlossElem?: HTMLButtonElement | null;
+  stocktobuyElem?: HTMLButtonElement | null;
+  clearElem?: HTMLButtonElement | null;
 
   static get styles() {
     return css`
@@ -34,15 +49,17 @@ export class PositionSize extends LitElement {
   }
 
   _calculateMaxDollarLoss() {
-    this.data.balance = parseFloat(this.balanceElem.value) || 0;
-    this.data.maxloss = (parseFloat(this.maxlossElem.value) || 0) / 100;
+    this.data.balance = parseFloat(this.balanceElem?.value || "0");
+    this.data.maxloss = parseFloat(this.maxlossElem?.value || "0") / 100;
     this.data.maxdollarloss = Math.ceil(this.data.balance * this.data.maxloss);
-    this.maxdollarlossElem.value = this.data.maxdollarloss;
+    if (this.maxdollarlossElem) {
+      this.maxdollarlossElem.value = String(this.data.maxdollarloss);
+    }
   }
 
   _calculateStockToBuy() {
-    this.data.entry = parseFloat(this.entryElem.value) || 0;
-    this.data.stoploss = parseFloat(this.stoplossElem.value) || 0;
+    this.data.entry = parseFloat(this.entryElem?.value || "0");
+    this.data.stoploss = parseFloat(this.stoplossElem?.value || "0");
     if (
       this.data.stoploss &&
       this.data.entry &&
@@ -57,10 +74,15 @@ export class PositionSize extends LitElement {
       this.data.stocktobuy = 0;
     }
 
-    this.stocktobuyElem.value = this.data.stocktobuy;
+    if(this.stocktobuyElem) {
+      this.stocktobuyElem.value = String(this.data.stocktobuy);
+    }
   }
 
   firstUpdated() {
+    if (!this.shadowRoot) {
+      return
+    }
     this.balanceElem = this.shadowRoot.querySelector("[name='balance']");
     this.maxlossElem = this.shadowRoot.querySelector("[name='maxloss']");
     this.maxdollarlossElem = this.shadowRoot.querySelector(
@@ -70,7 +92,6 @@ export class PositionSize extends LitElement {
     this.stoplossElem = this.shadowRoot.querySelector("[name='stoploss']");
     this.stocktobuyElem = this.shadowRoot.querySelector("[name='stocktobuy']");
 
-    this.saveElem = this.shadowRoot.querySelector("[name='save']");
     this.clearElem = this.shadowRoot.querySelector("[name='clear']");
 
     this._calculateMaxDollarLoss();
@@ -88,16 +109,15 @@ export class PositionSize extends LitElement {
   }
 
   _handleResetInputs() {
-    this.balanceElem.value = null;
-    this.maxlossElem.value = null;
-    this.stoplossElem.value = null;
-    this.entryElem.value = null;
+    if (this.balanceElem) this.balanceElem.value = "";
+    if (this.maxlossElem) this.maxlossElem.value = "";
+    if (this.stoplossElem) this.stoplossElem.value = "";
+    if (this.entryElem) this.entryElem.value = "";
   }
 
   _handleInputUpdate() {
     this._calculateMaxDollarLoss();
     this._calculateStockToBuy();
-    this.saveElem.disabled = !this.data.stocktobuy;
   }
 
   render() {
@@ -138,5 +158,3 @@ export class PositionSize extends LitElement {
     `;
   }
 }
-
-window.customElements.define("position-size", PositionSize);

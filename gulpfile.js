@@ -3,6 +3,7 @@ const browserSync = require("browser-sync").create();
 const clean = require("gulp-clean");
 const rollup = require("rollup");
 const resolve = require("rollup-plugin-node-resolve");
+const typescript = require('@rollup/plugin-typescript');
 const replace = require("gulp-replace");
 
 const { minify } = require("terser");
@@ -84,12 +85,16 @@ gulp.task("clean", () => {
 
 gulp.task("build", async () => {
   const bundle = await rollup.rollup({
-    input: ["src/main.js"],
+    input: ["src/main.ts"],
     output: {
       file: "dist/main.js",
       format: "es",
+      sourcemap: false,
+      globals: {
+        "chart.js": 'Chart'
+      }
     },
-    plugins: [resolve()],
+    plugins: [resolve(), typescript()],
   });
 
   return bundle.write({
@@ -141,7 +146,7 @@ gulp.task("serve", () => {
   });
 
   return gulp.watch(
-    ["src/**/*.{css,html,js,svg}"],
+    ["src/**/*.{css,html,js,ts,svg}"],
     gulp.series("clean", "bundle", "reload")
   );
 });

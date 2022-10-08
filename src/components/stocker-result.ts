@@ -1,20 +1,16 @@
 import { LitElement, html, css } from "lit";
+import {customElement, property} from 'lit/decorators.js';
 
+@customElement('stocker-result')
 export class StockerResult extends LitElement {
-  constructor() {
-    super();
-    this.name;
-    this.value;
-  }
-
-  static get properties() {
-    return {
-      name: { type: String, reflect: true },
-      value: { type: String },
-      unit: { type: String, reflect: true },
-      label: { type: String },
-    };
-  }
+  @property({ type: String, reflect: true  })
+  unit?: string;
+  @property({ type: String, reflect: true  })
+  name?: string;
+  @property({ type: String })
+  value?: string;
+  @property({ type: String })
+  label?: string;
 
   static get styles() {
     return css`
@@ -36,5 +32,3 @@ export class StockerResult extends LitElement {
     return html` <div class="">${result}</div> `;
   }
 }
-
-window.customElements.define("stocker-result", StockerResult);

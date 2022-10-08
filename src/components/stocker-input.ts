@@ -1,28 +1,29 @@
-import { LitElement, html, css } from "lit";
+import { LitElement, html, css, PropertyValues } from "lit";
+import {customElement, state, property} from 'lit/decorators.js';
 
+@customElement('stocker-input')
 export class StockerInput extends LitElement {
-  constructor() {
-    super();
-    this.label;
-    this.name;
-    this.required;
-    this.value;
-    this.input;
-    this.labelElem;
-  }
+  @property({ type: String, reflect: true })
+  name?: string;
+  @property({ type: String, reflect: true })
+  unit?: string;
+  @property({ type: Boolean, reflect: true })
+  required?: boolean;
+  @property({ type: Boolean, reflect: true })
+  right?: boolean;
 
-  static get properties() {
-    return {
-      label: { type: String },
-      name: { type: String, reflect: true },
-      required: { type: Boolean, reflect: true },
-      value: { type: String },
-      type: { type: String },
-      right: { type: Boolean, reflect: true },
-      unit: { type: String, reflect: true },
-      showUnit: { type: Boolean },
-    };
-  }
+  @property({ type: String})
+  label?: string;
+  @property({ type: String})
+  value?: string;
+  @property({ type: String})
+  type?: string;
+
+  @state()
+  private showUnit?: boolean;
+
+  private input?: HTMLInputElement | null;
+  private labelElem?: HTMLLabelElement | null;
 
   static get styles() {
     return css`
@@ -121,15 +122,15 @@ export class StockerInput extends LitElement {
     `;
   }
 
-  willUpdate(changedProperties) {
+  willUpdate(changedProperties: PropertyValues<StockerInput>) {
     changedProperties.forEach((_, propName) => {
       if (propName === "value" && this.value === null) this._valueReset();
     });
   }
 
   firstUpdated() {
-    this.labelElem = this.shadowRoot.querySelector("label");
-    this.input = this.shadowRoot.querySelector("input");
+    this.labelElem = this.shadowRoot?.querySelector("label");
+    this.input = this.shadowRoot?.querySelector("input");
     if (this.input && this.labelElem && this.input.value) {
       this.labelElem.classList.add("label-show");
     }
@@ -139,7 +140,6 @@ export class StockerInput extends LitElement {
     return html`
       <input
         name=${this.name}
-        pattern=${this.pattern}
         id=${`input-${this.name}`}
         type="text"
         ?required=${this.required}
@@ -159,20 +159,20 @@ export class StockerInput extends LitElement {
   }
 
   _valueReset() {
-    this.input.value = null;
-    this.labelElem.classList.remove("label-show");
+    if (this.input) this.input.value = "";
+    this.labelElem?.classList.remove("label-show");
     this.showUnit = false;
   }
 
-  _handleBeforeInput(event) {
-    const newData = event.target.value + event.data;
+  _handleBeforeInput(event: InputEvent) {
+    const newData = (event.target as HTMLInputElement).value + event.data;
     const isDelete = ["deleteContentBackward", "deleteContentForward"].includes(
       event.inputType
     );
 
     switch (this.type) {
       case "number":
-        if (isNaN(newData) && !isDelete) {
+        if (isNaN(Number(newData)) && !isDelete) {
           event.preventDefault();
         }
         break;
@@ -188,7 +188,7 @@ export class StockerInput extends LitElement {
   }
 
   _handleFocus() {
-    const inputContainer = this.shadowRoot.querySelector(".input-container");
+    const inputContainer = this.shadowRoot?.querySelector(".input-container");
     if (this.labelElem) {
       this.labelElem.classList.add("label-show");
     }
@@ -199,7 +199,7 @@ export class StockerInput extends LitElement {
   }
 
   _handleBlur() {
-    const inputContainer = this.shadowRoot.querySelector(".input-container");
+    const inputContainer = this.shadowRoot?.querySelector(".input-container");
     if (this.labelElem && this.input && !this.input.value) {
       this.labelElem.classList.remove("label-show");
       this.showUnit = false;
@@ -209,10 +209,10 @@ export class StockerInput extends LitElement {
     }
   }
 
-  _inputHandler(event) {
-    let value = event.composedPath()[0].value;
+  _inputHandler(event: InputEvent) {
+    let value = (event.composedPath()[0] as HTMLInputElement).value;
 
-    if (this.type === "uppercase") {
+    if (this.type === "uppercase" && this.input) {
       value = value.toUpperCase();
       this.input.value = value;
     }
@@ -236,5 +236,3 @@ export class StockerInput extends LitElement {
     `;
   }
 }
-
-window.customElements.define("stocker-input", StockerInput);
