@@ -1,5 +1,8 @@
 .DS_Store
 .ENV
 .serverless
+cypress/results
+cypress/screenshots
+cypress/videos
 /dist
 /node_modules
