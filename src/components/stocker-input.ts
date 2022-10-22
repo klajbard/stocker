@@ -108,7 +108,7 @@ export class StockerInput extends LitElement {
       .unit {
         position: absolute;
         right: 0.5rem;
-        bottom: 0.5rem;
+        bottom: 0.25rem;
         font-size: 0.8rem;
         width: 1rem;
       }

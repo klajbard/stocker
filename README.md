@@ -5,15 +5,15 @@ Basic app to help stock tracking/sizing etc.
 ## Position sizing
 
 Based on given inputs it will calculate the right position size to buy.
-- Account balance - The max capital of the account
-- Max loss - The desired max loss on the trade in percentage
+- Account Balance - The max capital of the account
+- Max Loss - The desired Max Loss on the trade in percentage
 - Entry price - Current price of the stock
-- Stop loss price - The maximum stop loss price for the stock to close the position
+- Stop Loss Price - The maximum Stop Loss Price for the stock to close the position
 
 ### Example
 
-Account balance: $10.000
-Max loss: 3%
+Account Balance: $10.000
+Max Loss: 3%
 Entry price: $55
 Stop loss: $53
 

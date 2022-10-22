@@ -67,8 +67,8 @@ const chartConfig: ChartConfiguration<
   },
 };
 
-@customElement("portfolio-data")
-export class PortfolioData extends LitElement {
+@customElement("portfolio-overview")
+export class PortfolioOverview extends LitElement {
   chart?: Chart;
   data: Portfolio[] = [];
   tickerElem?: HTMLInputElement | null;
@@ -108,6 +108,7 @@ export class PortfolioData extends LitElement {
       }
 
       .table-container {
+        box-shadow: var(--support-dark) 0px -3px 9px -6px inset;
         overflow-y: auto;
       }
 
@@ -121,6 +122,7 @@ export class PortfolioData extends LitElement {
 
       table tr > *:not(:first-of-type) {
         width: 20%;
+        padding: 0 0.5rem;
         text-align: end;
       }
 
@@ -162,6 +164,7 @@ export class PortfolioData extends LitElement {
           }
 
           .table-container {
+            box-shadow: none;
             grid-area: table;
           }
         `

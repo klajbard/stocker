@@ -8,7 +8,7 @@ interface Position {
   maxloss: number;
   entry: number;
   stoploss: number;
-  maxdollarloss: number;
+  maxriskamount: number;
   stocktobuy: number;
 }
 
@@ -19,14 +19,14 @@ export class PositionSize extends LitElement {
     maxloss: 0,
     entry: 0,
     stoploss: 0,
-    maxdollarloss: 0,
+    maxriskamount: 0,
     stocktobuy: 0,
   };
   balanceElem?: StockerInput | null;
   maxlossElem?: StockerInput | null;
   entryElem?: StockerInput | null;
   stoplossElem?: StockerInput | null;
-  maxdollarlossElem?: HTMLButtonElement | null;
+  maxriskamountElem?: HTMLButtonElement | null;
   stocktobuyElem?: HTMLButtonElement | null;
   clearElem?: HTMLButtonElement | null;
 
@@ -42,6 +42,7 @@ export class PositionSize extends LitElement {
       }
 
       .result-container {
+        margin-top: 0.5rem;
       }
 
       .action-container {
@@ -53,8 +54,21 @@ export class PositionSize extends LitElement {
         css`
           :host {
             display: grid;
-            grid-template-areas: "input result";
+            grid-template-areas:
+              "descr descr"
+              "input defs"
+              "input defs"
+              "result result";
             grid-template-columns: 1fr 1fr;
+          }
+
+          .definitions {
+            grid-area: defs;
+            padding: 1rem;
+          }
+
+          .description {
+            grid-area: descr;
           }
 
           .input-container {
@@ -72,12 +86,12 @@ export class PositionSize extends LitElement {
     `;
   }
 
-  _calculateMaxDollarLoss() {
+  _calculateMaxRiskAmount() {
     this.data.balance = parseFloat(this.balanceElem?.value || "0");
     this.data.maxloss = parseFloat(this.maxlossElem?.value || "0") / 100;
-    this.data.maxdollarloss = Math.ceil(this.data.balance * this.data.maxloss);
-    if (this.maxdollarlossElem) {
-      this.maxdollarlossElem.value = String(this.data.maxdollarloss);
+    this.data.maxriskamount = Math.ceil(this.data.balance * this.data.maxloss);
+    if (this.maxriskamountElem) {
+      this.maxriskamountElem.value = String(this.data.maxriskamount);
     }
   }
 
@@ -91,7 +105,7 @@ export class PositionSize extends LitElement {
     ) {
       this.data.stocktobuy =
         Math.floor(
-          this.data.maxdollarloss /
+          this.data.maxriskamount /
             Math.abs(this.data.stoploss - this.data.entry)
         ) || 0;
     } else {
@@ -109,8 +123,8 @@ export class PositionSize extends LitElement {
     }
     this.balanceElem = this.shadowRoot.querySelector("[name='balance']");
     this.maxlossElem = this.shadowRoot.querySelector("[name='maxloss']");
-    this.maxdollarlossElem = this.shadowRoot.querySelector(
-      "[name='maxdollarloss']"
+    this.maxriskamountElem = this.shadowRoot.querySelector(
+      "[name='maxriskamount']"
     );
     this.entryElem = this.shadowRoot.querySelector("[name='entry']");
     this.stoplossElem = this.shadowRoot.querySelector("[name='stoploss']");
@@ -118,7 +132,7 @@ export class PositionSize extends LitElement {
 
     this.clearElem = this.shadowRoot.querySelector("[name='clear']");
 
-    this._calculateMaxDollarLoss();
+    this._calculateMaxRiskAmount();
     this._calculateStockToBuy();
   }
 
@@ -141,18 +155,33 @@ export class PositionSize extends LitElement {
   }
 
   _handleInputUpdate() {
-    this._calculateMaxDollarLoss();
+    this._calculateMaxRiskAmount();
     this._calculateStockToBuy();
   }
 
   render() {
     const inputs = [
-      { label: "Account balance", name: "balance", unit: "$" },
-      { label: "Max loss", name: "maxloss", unit: "%" },
+      { label: "Account Balance", name: "balance", unit: "$" },
+      { label: "Max Loss", name: "maxloss", unit: "%" },
       { label: "Entry price", name: "entry", unit: "$" },
-      { label: "Stop loss price", name: "stoploss", unit: "$" },
+      { label: "Stop Loss Price", name: "stoploss", unit: "$" },
     ];
     return html`
+      <p class="description">
+        Proper position sizing helps managing risk in trading. The following
+        calculator will find the amount of stocks to buy considering the account
+        size, Max Loss, entry price and Stop Loss Price.
+      </p>
+      <dl class="definitions">
+        <dt>Account Balance</dt>
+        <dd>The size of the account</dd>
+        <dt>Max Loss</dt>
+        <dd>The percentage of the account to risk</dd>
+        <dt>Entry Price</dt>
+        <dd>Current price of the stock to buy</dd>
+        <dt>Stop Loss Price</dt>
+        <dd>The price limit to exit the trade (short/long)</dd>
+      </dl>
       <div class="input-container">
         ${inputs.map(
           ({ label, name, unit }) => html`
@@ -173,12 +202,12 @@ export class PositionSize extends LitElement {
       </div>
       <div class="result-container">
         <stocker-result
-          label="Max $ loss"
-          name="maxdollarloss"
+          label="Max Risk Amount"
+          name="maxriskamount"
           unit="$"
         ></stocker-result>
         <stocker-result
-          label="Stock quantity"
+          label="Stock Quantity"
           name="stocktobuy"
         ></stocker-result>
       </div>
