@@ -15,7 +15,7 @@ export class StockerInput extends LitElement {
   @property({ type: String })
   label?: string;
   @property({ type: String })
-  value?: string;
+  value?: string | null;
   @property({ type: String })
   type?: string;
 
@@ -43,7 +43,7 @@ export class StockerInput extends LitElement {
       }
       input {
         box-sizing: border-box;
-        font-size: 1.2rem;
+        font-size: 1rem;
         font-family: inherit;
         color: inherit;
         border-radius: 2px;
@@ -62,7 +62,7 @@ export class StockerInput extends LitElement {
       }
 
       .label {
-        font-size: 1.2rem;
+        font-size: 1rem;
         cursor: text;
         display: block;
         transition: all 0.2s ease-in-out;
@@ -94,7 +94,7 @@ export class StockerInput extends LitElement {
         position: relative;
         padding: 0.5rem 0px;
         border-bottom: 3px solid var(--dark-brand);
-        margin-top: 2rem;
+        margin-top: 1.5rem;
       }
 
       .input-focused {
@@ -103,13 +103,6 @@ export class StockerInput extends LitElement {
 
       .input-focused input::placeholder {
         opacity: 1;
-      }
-
-      .overflew {
-        position: absolute;
-        width: 100%;
-        height: 2rem;
-        box-shadow: inset 0 1px 0 var(--lighter-grey);
       }
 
       .unit {

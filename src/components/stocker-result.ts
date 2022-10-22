@@ -21,7 +21,7 @@ export class StockerResult extends LitElement {
       }
 
       .unit {
-        font-size: 1.2rem;
+        font-size: 1rem;
         width: 1rem;
       }
     `;

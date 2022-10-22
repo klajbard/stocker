@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://stock.klajbar.com/sitemap.xml
+Sitemap: http://stocker.klajbar.com/sitemap.xml

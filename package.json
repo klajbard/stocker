@@ -3,7 +3,7 @@
   "description": "Web app for basic stock helpers.",
   "scripts": {
     "start": "HOSTNAME=\"http://localhost:3000\"  gulp watch",
-    "build": "HOSTNAME=\"https://stock.klajbar.com\" gulp",
+    "build": "HOSTNAME=\"http://stocker.klajbar.com\" gulp",
     "deploy": "sls deploy --verbose",
     "format": "prettier '{,src}/**/*.{html,js,ts,css}' --write",
     "lint": "eslint src/**/*.{js,ts}",

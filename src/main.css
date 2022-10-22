@@ -1,9 +1,11 @@
 :root {
-  --support-dark: #222c26;
-  --support-light: #f4f6f5;
+  --support-dark: #5c4643;
+  --support-lighter: #b49b98;
 
-  --brand-color: #090;
-  --light-brand: #0c0;
+  --support-light: #dfc4a4;
+
+  --brand-color: #232929;
+  --light-brand: #7f292c;
   --dark-brand: #040;
   --lighter-grey: #dedede;
 }
@@ -20,13 +22,37 @@ body {
   font-weight: 400;
   line-height: 1.7;
   color: var(--support-dark);
-  background-color: var(--support-light);
+  background-color: var(--support-dark);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
 .main {
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+h1,
+section {
+  margin: 0;
+  padding: 1.5rem 1rem;
+  border-radius: 1rem;
   background-color: var(--support-light);
-  padding: 4rem;
+}
+
+h2 {
+  margin: 0 0 1rem;
+}
+
+@media screen and (min-width: 640px) {
+  .main {
+    padding: 1rem;
+  }
+  h1,
+  section {
+    padding: 1rem 1.5rem;
+  }
 }

@@ -10,6 +10,7 @@ import {
 } from "chart.js";
 import { LitElement, html, css } from "lit";
 import { customElement } from "lit/decorators.js";
+import { respondTo } from "./utils";
 
 Chart.register(ArcElement, DoughnutController, Legend, Tooltip);
 
@@ -35,6 +36,11 @@ const chartConfig: ChartConfiguration<
           "rgb(255, 99, 132)",
           "rgb(54, 162, 235)",
           "rgb(255, 205, 86)",
+          "rgb(60,82,145)",
+          "rgb(203, 161, 53)",
+          "rgb(134, 38, 51)",
+          "rgb(229, 158, 109)",
+          "rgb(93, 55, 84)",
         ],
         hoverOffset: 4,
       },
@@ -86,23 +92,90 @@ export class PortfolioData extends LitElement {
     return css`
       :host {
         display: grid;
-        grid-template-areas: "input chart table";
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
       }
 
       .input-container {
-        grid-area: input;
-        max-width: 20rem;
+        margin: 0 auto;
+        width: 100%;
+        max-width: 18rem;
       }
 
       .chart-container {
-        grid-area: chart;
-        max-width: 20rem;
+        margin: 0 auto;
+        width: 18rem;
       }
 
       .table-container {
-        grid-area: table;
+        overflow-y: auto;
       }
+
+      table {
+        min-width: 30rem;
+      }
+
+      table tr > td {
+        border-top: 1px solid var(--lighter-grey);
+      }
+
+      table tr > *:not(:first-of-type) {
+        width: 20%;
+        text-align: end;
+      }
+
+      table tr > *:nth-of-type(2) {
+        text-align: start;
+      }
+
+      .remove {
+        padding: 0.3rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+      }
+
+      .action-container {
+        margin-top: 0.5rem;
+        display: flex;
+      }
+
+      ${respondTo(
+        "tablet",
+        css`
+          :host {
+            display: grid;
+            grid-template-areas:
+              "input chart"
+              "table table";
+            grid-template-columns: repeat(2, 1fr);
+          }
+
+          .input-container {
+            grid-area: input;
+            max-width: 20rem;
+          }
+
+          .chart-container {
+            grid-area: chart;
+            max-width: 20rem;
+          }
+
+          .table-container {
+            grid-area: table;
+          }
+        `
+      )}
+
+      ${respondTo(
+        "desktop",
+        css`
+          :host {
+            grid-template-areas: "input chart table";
+            grid-template-columns: repeat(3, 1fr);
+          }
+        `
+      )}
     `;
   }
 
@@ -177,12 +250,13 @@ export class PortfolioData extends LitElement {
   }
 
   _handleInputUpdate() {
-    if (this.addElem)
+    if (this.addElem) {
       this.addElem.disabled = !(
         this.tickerElem?.value &&
         this.priceElem?.value &&
         this.amountElem?.value
       );
+    }
   }
 
   _handleClickAdd() {
@@ -203,7 +277,7 @@ export class PortfolioData extends LitElement {
       parseFloat(this.amountElem?.value || "0") *
         parseFloat(this.priceElem?.value || "0")
     );
-    // this._handleResetInputs();
+    this._handleResetInputs();
     this.saveDataToLS();
   }
 
@@ -212,6 +286,10 @@ export class PortfolioData extends LitElement {
   }
 
   _handleClickClearLS() {
+    const dialogResult = confirm(`Remove all previously added data?`);
+    if (!dialogResult) {
+      return;
+    }
     localStorage.removeItem("portfolio");
     this.clearData();
     this.shadowRoot?.querySelector(".table-container > table")?.remove();
@@ -219,6 +297,12 @@ export class PortfolioData extends LitElement {
 
   _handleRemoveClick =
     (ticker: string, amount: string, price: string) => () => {
+      const dialogResult = confirm(
+        `Remove ${ticker} from list (quote: $${price}, amount: ${amount})?`
+      );
+      if (!dialogResult) {
+        return;
+      }
       const indexToRemoveLS = this.data.findIndex(
         (elem) =>
           elem.ticker === ticker &&
@@ -258,15 +342,19 @@ export class PortfolioData extends LitElement {
     const totalPrice = parseFloat(amount) * parseFloat(price);
     return html`
       <tr>
-        <td>${ticker}</td>
-        <td>${amount}</td>
-        <td>${price}</td>
-        <td>${((totalPrice / this.sum) * 100).toFixed(2)} %</td>
         <td>
-          <button @click=${this._handleRemoveClick(ticker, amount, price)}>
-            Remove
+          <button
+            class="remove"
+            @click=${this._handleRemoveClick(ticker, amount, price)}
+          >
+            &#x274c;
           </button>
         </td>
+        <td>${ticker}</td>
+        <td><em>${price}</em></td>
+        <td><em>${amount}</em></td>
+        <td><em>${totalPrice}</em></td>
+        <td><strong>${((totalPrice / this.sum) * 100).toFixed(2)}</strong></td>
       </tr>
     `;
   }
@@ -278,10 +366,12 @@ export class PortfolioData extends LitElement {
     return html`
       <table>
         <tr>
+          <th></th>
           <th>Ticker</th>
-          <th>Price</th>
+          <th>Quote ($)</th>
           <th>Amount</th>
-          <th>Total</th>
+          <th>Total ($)</th>
+          <th>Weight (%)</th>
         </tr>
         ${this.data.map((elem) => this.renderTableRow(elem))}
       </table>
@@ -310,10 +400,14 @@ export class PortfolioData extends LitElement {
           type="number"
           right
         ></stocker-input>
-        <button name="add" disabled @click=${this._handleClickAdd}>Add</button>
-        <button name="clear" @click=${this._handleClickClearLS}>
-          Clear storage
-        </button>
+        <div class="action-container">
+          <stocker-button name="add" disabled @click=${this._handleClickAdd}
+            >Add</stocker-button
+          >
+          <stocker-button name="clear" @click=${this._handleClickClearLS}>
+            Clear storage
+          </stocker-button>
+        </div>
       </div>
       <div class="chart-container">
         <canvas id="portfolio"></canvas>

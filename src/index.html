@@ -1,25 +1,24 @@
 <!DOCTYPE html>
 <html lang="hu">
   <head>
-    <link rel="canonical" href="https://stock.klajbar.com" />
+    <link rel="canonical" href="http://stocker.klajbar.com" />
     <meta property="og:title" content="STOCKer" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://stock.klajbar.com" />
+    <meta property="og:url" content="http://stocker.klajbar.com" />
     <title>STOCKer</title>
-    <link rel="stylesheet" async defer href="{{hostname}}/homepage.css" />
     @@include('./subpages/headers.html') @@include('./subpages/commonmeta.html')
   </head>
   <body class="webp">
-    @@include('./subpages/heading.html')
     <main class="main">
       <h1>STOCKer</h1>
-      <div>
+      <section>
         <h2>Position sizing</h2>
         <position-size></position-size>
+      </section>
+      <section>
         <h2>Portfolio data</h2>
         <portfolio-data></portfolio-data>
-      </div>
+      </section>
     </main>
-    @@include('./subpages/footer.html') @@include('./subpages/postscripts.html')
   </body>
 </html>

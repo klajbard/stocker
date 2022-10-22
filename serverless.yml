@@ -14,7 +14,7 @@ custom:
     before:package:createDeploymentArtifacts:
       - yarn build
   s3Sync:
-    - bucketName: stock.klajbar.com
+    - bucketName: stocker.klajbar.com
       localDir: dist
       params:
         - index.html:

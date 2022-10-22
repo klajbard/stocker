@@ -1,5 +1,7 @@
 import { LitElement, html, css } from "lit";
 import { customElement } from "lit/decorators.js";
+import { StockerInput } from "./stocker-input";
+import { respondTo } from "./utils";
 
 interface Position {
   balance: number;
@@ -20,10 +22,10 @@ export class PositionSize extends LitElement {
     maxdollarloss: 0,
     stocktobuy: 0,
   };
-  balanceElem?: HTMLInputElement | null;
-  maxlossElem?: HTMLInputElement | null;
-  entryElem?: HTMLInputElement | null;
-  stoplossElem?: HTMLInputElement | null;
+  balanceElem?: StockerInput | null;
+  maxlossElem?: StockerInput | null;
+  entryElem?: StockerInput | null;
+  stoplossElem?: StockerInput | null;
   maxdollarlossElem?: HTMLButtonElement | null;
   stocktobuyElem?: HTMLButtonElement | null;
   clearElem?: HTMLButtonElement | null;
@@ -31,20 +33,42 @@ export class PositionSize extends LitElement {
   static get styles() {
     return css`
       :host {
-        display: grid;
-        grid-template-areas: "input result";
-        grid-template-columns: 1fr 1fr;
       }
 
       .input-container {
-        grid-area: input;
-        max-width: 20rem;
+        max-width: 18rem;
+        width: 100%;
+        margin: auto;
       }
 
       .result-container {
-        grid-area: result;
-        max-width: 20rem;
       }
+
+      .action-container {
+        margin-top: 0.5rem;
+      }
+
+      ${respondTo(
+        "tablet",
+        css`
+          :host {
+            display: grid;
+            grid-template-areas: "input result";
+            grid-template-columns: 1fr 1fr;
+          }
+
+          .input-container {
+            grid-area: input;
+            max-width: 20rem;
+          }
+
+          .result-container {
+            grid-area: result;
+            max-width: 20rem;
+            padding: 1rem;
+          }
+        `
+      )}
     `;
   }
 
@@ -109,10 +133,11 @@ export class PositionSize extends LitElement {
   }
 
   _handleResetInputs() {
-    if (this.balanceElem) this.balanceElem.value = "";
-    if (this.maxlossElem) this.maxlossElem.value = "";
-    if (this.stoplossElem) this.stoplossElem.value = "";
-    if (this.entryElem) this.entryElem.value = "";
+    if (this.balanceElem) this.balanceElem.value = null;
+    if (this.maxlossElem) this.maxlossElem.value = null;
+    if (this.stoplossElem) this.stoplossElem.value = null;
+    if (this.entryElem) this.entryElem.value = null;
+    this._handleInputUpdate();
   }
 
   _handleInputUpdate() {
@@ -140,9 +165,11 @@ export class PositionSize extends LitElement {
             ></stocker-input>
           `
         )}
-        <button name="clear" @click=${this._handleResetInputs}>
-          Clear inputs
-        </button>
+        <div class="action-container">
+          <stocker-button name="clear" @click=${this._handleResetInputs}>
+            Clear inputs
+          </stocker-button>
+        </div>
       </div>
       <div class="result-container">
         <stocker-result
