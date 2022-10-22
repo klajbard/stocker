@@ -4,8 +4,6 @@ import { customElement, property } from "lit/decorators.js";
 @customElement("stocker-result")
 export class StockerResult extends LitElement {
   @property({ type: String, reflect: true })
-  unit?: string;
-  @property({ type: String, reflect: true })
   name?: string;
   @property({ type: String })
   value?: string;
@@ -18,17 +16,21 @@ export class StockerResult extends LitElement {
         position: relative;
         display: flex;
         flex-direction: column;
+        font-weight: bold;
       }
 
-      .unit {
-        font-size: 1rem;
-        width: 1rem;
+      dd {
+        margin-left: 1rem;
+        line-height: 1.1;
+        font-size: 2rem;
       }
     `;
   }
 
   render() {
-    const result = `${this.label}: ${this.value}${this.unit || ""}`;
-    return html` <div class="">${result}</div> `;
+    return html`
+      <dt>${this.label}</dt>
+      <dd>${this.value}</dd>
+    `;
   }
 }

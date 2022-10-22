@@ -356,7 +356,7 @@ export class PortfolioOverview extends LitElement {
         <td>${ticker}</td>
         <td><em>${price}</em></td>
         <td><em>${amount}</em></td>
-        <td><em>${totalPrice}</em></td>
+        <td><em>${totalPrice.toFixed(2)}</em></td>
         <td><strong>${((totalPrice / this.sum) * 100).toFixed(2)}</strong></td>
       </tr>
     `;
@@ -404,12 +404,12 @@ export class PortfolioOverview extends LitElement {
           right
         ></stocker-input>
         <div class="action-container">
-          <stocker-button name="add" disabled @click=${this._handleClickAdd}
-            >Add</stocker-button
-          >
           <stocker-button name="clear" @click=${this._handleClickClearLS}>
             Clear storage
           </stocker-button>
+          <stocker-button name="add" disabled @click=${this._handleClickAdd}
+            >Add</stocker-button
+          >
         </div>
       </div>
       <div class="chart-container">

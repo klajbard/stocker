@@ -8,6 +8,7 @@
   --light-brand: #7f292c;
   --dark-brand: #040;
   --lighter-grey: #dedede;
+  --dark-grey: #1f2022;
 }
 
 html {
@@ -41,6 +42,7 @@ section {
   padding: 1.5rem 1rem;
   border-radius: 1rem;
   background-color: var(--support-light);
+  box-shadow: 2px 2px 5px var(--dark-grey);
 }
 
 h2 {

@@ -8,8 +8,8 @@ interface Position {
   maxloss: number;
   entry: number;
   stoploss: number;
-  maxriskamount: number;
-  stocktobuy: number;
+  maxRiskAmount: number;
+  positionSize: number;
 }
 
 @customElement("position-size")
@@ -19,15 +19,15 @@ export class PositionSize extends LitElement {
     maxloss: 0,
     entry: 0,
     stoploss: 0,
-    maxriskamount: 0,
-    stocktobuy: 0,
+    maxRiskAmount: 0,
+    positionSize: 0,
   };
   balanceElem?: StockerInput | null;
   maxlossElem?: StockerInput | null;
   entryElem?: StockerInput | null;
   stoplossElem?: StockerInput | null;
-  maxriskamountElem?: HTMLButtonElement | null;
-  stocktobuyElem?: HTMLButtonElement | null;
+  maxRiskAmountElem?: HTMLButtonElement | null;
+  positionSizeElem?: HTMLButtonElement | null;
   clearElem?: HTMLButtonElement | null;
 
   static get styles() {
@@ -41,12 +41,36 @@ export class PositionSize extends LitElement {
         margin: auto;
       }
 
-      .result-container {
-        margin-top: 0.5rem;
+      .results-container {
+        max-width: 18rem;
+        width: 100%;
+        margin: 1rem auto;
+      }
+
+      .results-container h3 {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid var(--support-dark);
+      }
+
+      .results-container dl {
+        margin: 0;
       }
 
       .action-container {
         margin-top: 0.5rem;
+      }
+
+      .definitions dd {
+        position: relative;
+      }
+
+      .definitions dd:before {
+        content: "↳";
+        position: absolute;
+        top: 0;
+        font-weight: bold;
+        left: -1.5rem;
       }
 
       ${respondTo(
@@ -58,13 +82,13 @@ export class PositionSize extends LitElement {
               "descr descr"
               "input defs"
               "input defs"
-              "result result";
+              "result .";
             grid-template-columns: 1fr 1fr;
           }
 
           .definitions {
             grid-area: defs;
-            padding: 1rem;
+            padding: 0.5rem 1rem;
           }
 
           .description {
@@ -76,10 +100,10 @@ export class PositionSize extends LitElement {
             max-width: 20rem;
           }
 
-          .result-container {
+          .results-container {
             grid-area: result;
             max-width: 20rem;
-            padding: 1rem;
+            padding: 0 1rem;
           }
         `
       )}
@@ -89,13 +113,13 @@ export class PositionSize extends LitElement {
   _calculateMaxRiskAmount() {
     this.data.balance = parseFloat(this.balanceElem?.value || "0");
     this.data.maxloss = parseFloat(this.maxlossElem?.value || "0") / 100;
-    this.data.maxriskamount = Math.ceil(this.data.balance * this.data.maxloss);
-    if (this.maxriskamountElem) {
-      this.maxriskamountElem.value = String(this.data.maxriskamount);
+    this.data.maxRiskAmount = Math.ceil(this.data.balance * this.data.maxloss);
+    if (this.maxRiskAmountElem) {
+      this.maxRiskAmountElem.value = String(this.data.maxRiskAmount);
     }
   }
 
-  _calculateStockToBuy() {
+  _calculatePositionSize() {
     this.data.entry = parseFloat(this.entryElem?.value || "0");
     this.data.stoploss = parseFloat(this.stoplossElem?.value || "0");
     if (
@@ -103,17 +127,17 @@ export class PositionSize extends LitElement {
       this.data.entry &&
       this.data.entry !== this.data.stoploss
     ) {
-      this.data.stocktobuy =
+      this.data.positionSize =
         Math.floor(
-          this.data.maxriskamount /
+          this.data.maxRiskAmount /
             Math.abs(this.data.stoploss - this.data.entry)
         ) || 0;
     } else {
-      this.data.stocktobuy = 0;
+      this.data.positionSize = 0;
     }
 
-    if (this.stocktobuyElem) {
-      this.stocktobuyElem.value = String(this.data.stocktobuy);
+    if (this.positionSizeElem) {
+      this.positionSizeElem.value = String(this.data.positionSize);
     }
   }
 
@@ -123,17 +147,19 @@ export class PositionSize extends LitElement {
     }
     this.balanceElem = this.shadowRoot.querySelector("[name='balance']");
     this.maxlossElem = this.shadowRoot.querySelector("[name='maxloss']");
-    this.maxriskamountElem = this.shadowRoot.querySelector(
-      "[name='maxriskamount']"
+    this.maxRiskAmountElem = this.shadowRoot.querySelector(
+      "[name='maxRiskAmount']"
     );
     this.entryElem = this.shadowRoot.querySelector("[name='entry']");
     this.stoplossElem = this.shadowRoot.querySelector("[name='stoploss']");
-    this.stocktobuyElem = this.shadowRoot.querySelector("[name='stocktobuy']");
+    this.positionSizeElem = this.shadowRoot.querySelector(
+      "[name='positionSize']"
+    );
 
     this.clearElem = this.shadowRoot.querySelector("[name='clear']");
 
     this._calculateMaxRiskAmount();
-    this._calculateStockToBuy();
+    this._calculatePositionSize();
   }
 
   connectedCallback() {
@@ -156,7 +182,7 @@ export class PositionSize extends LitElement {
 
   _handleInputUpdate() {
     this._calculateMaxRiskAmount();
-    this._calculateStockToBuy();
+    this._calculatePositionSize();
   }
 
   render() {
@@ -173,14 +199,14 @@ export class PositionSize extends LitElement {
         size, Max Loss, entry price and Stop Loss Price.
       </p>
       <dl class="definitions">
-        <dt>Account Balance</dt>
-        <dd>The size of the account</dd>
-        <dt>Max Loss</dt>
-        <dd>The percentage of the account to risk</dd>
-        <dt>Entry Price</dt>
-        <dd>Current price of the stock to buy</dd>
-        <dt>Stop Loss Price</dt>
-        <dd>The price limit to exit the trade (short/long)</dd>
+        <dt><strong>Account Balance</strong></dt>
+        <dd><em>The size of the account</em></dd>
+        <dt><strong>Max Loss</strong></dt>
+        <dd><em>The percentage of the account to risk</em></dd>
+        <dt><strong>Entry Price</strong></dt>
+        <dd><em>Current price of the stock to buy</em></dd>
+        <dt><strong>Stop Loss Price</strong></dt>
+        <dd><em>The price limit to exit the trade (short/long)</em></dd>
       </dl>
       <div class="input-container">
         ${inputs.map(
@@ -200,16 +226,18 @@ export class PositionSize extends LitElement {
           </stocker-button>
         </div>
       </div>
-      <div class="result-container">
-        <stocker-result
-          label="Max Risk Amount"
-          name="maxriskamount"
-          unit="$"
-        ></stocker-result>
-        <stocker-result
-          label="Stock Quantity"
-          name="stocktobuy"
-        ></stocker-result>
+      <div class="results-container">
+        <h3>Results</h3>
+        <dl>
+          <stocker-result
+            label="Money in Risk ($)"
+            name="maxRiskAmount"
+          ></stocker-result>
+          <stocker-result
+            label="Position Size"
+            name="positionSize"
+          ></stocker-result>
+        </dl>
       </div>
     `;
   }
