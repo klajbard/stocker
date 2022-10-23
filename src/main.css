@@ -39,24 +39,50 @@ body {
   gap: 1rem;
 }
 
-h1,
+nav,
 section {
-  margin: 0;
   padding: 1.5rem 1rem;
   border-radius: 1rem;
   background-color: var(--support-light);
   box-shadow: 2px 2px 5px var(--dark-grey);
 }
 
+h1 {
+  margin: 0;
+  font-size: 2.5rem;
+}
+
 h2 {
-  margin: 0 0 1rem;
+  margin: 0;
+  padding: 1rem 0 0;
+  font-size: 2rem;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  gap: 1rem;
+}
+
+nav ul a {
+  color: var(--light-brand);
 }
 
 @media screen and (min-width: 640px) {
   .main {
     padding: 1rem;
   }
-  h1,
+  nav,
   section {
     padding: 1rem 1.5rem;
   }
