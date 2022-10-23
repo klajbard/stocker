@@ -60,6 +60,14 @@ export class StockerInput extends LitElement {
         opacity: 0;
         transition: all 0.2s ease-in-out;
       }
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield;
+      }
 
       .label {
         font-size: 1rem;
@@ -134,7 +142,7 @@ export class StockerInput extends LitElement {
       <input
         name=${this.name}
         id=${`input-${this.name}`}
-        type="text"
+        type=${this.type === "number" ? this.type : "text"}
         ?required=${this.required}
         @input=${this._inputHandler}
         @focus=${this._handleFocus}

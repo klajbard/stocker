@@ -25,7 +25,7 @@ If this happens I'm **$2** below the initial price and I'm realizing **150 x $2 
 ## Portfolio data
 
 Simple tool to visualize the portfolio and show the current percentage.
-Must provide `Ticker`, `Amount`, `Price` for each stock.
+Must provide `Ticker`, `Amount`, `Quote` for each stock.
 Once stocks are provided it will create a pie chart and a table from the result data.
 
 ## Dependencies

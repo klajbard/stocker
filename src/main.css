@@ -9,6 +9,9 @@
   --dark-brand: #040;
   --lighter-grey: #dedede;
   --dark-grey: #1f2022;
+
+  --support-blue: #0f398b;
+  --support-red: #c63a4f;
 }
 
 html {

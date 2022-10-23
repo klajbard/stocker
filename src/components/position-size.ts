@@ -28,7 +28,6 @@ export class PositionSize extends LitElement {
   stoplossElem?: StockerInput | null;
   maxRiskAmountElem?: HTMLButtonElement | null;
   positionSizeElem?: HTMLButtonElement | null;
-  clearElem?: HTMLButtonElement | null;
 
   static get styles() {
     return css`
@@ -156,8 +155,6 @@ export class PositionSize extends LitElement {
       "[name='positionSize']"
     );
 
-    this.clearElem = this.shadowRoot.querySelector("[name='clear']");
-
     this._calculateMaxRiskAmount();
     this._calculatePositionSize();
   }
@@ -170,14 +167,6 @@ export class PositionSize extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener("input-update", this._handleInputUpdate);
-  }
-
-  _handleResetInputs() {
-    if (this.balanceElem) this.balanceElem.value = null;
-    if (this.maxlossElem) this.maxlossElem.value = null;
-    if (this.stoplossElem) this.stoplossElem.value = null;
-    if (this.entryElem) this.entryElem.value = null;
-    this._handleInputUpdate();
   }
 
   _handleInputUpdate() {
@@ -220,11 +209,6 @@ export class PositionSize extends LitElement {
             ></stocker-input>
           `
         )}
-        <div class="action-container">
-          <stocker-button name="clear" @click=${this._handleResetInputs}>
-            Clear inputs
-          </stocker-button>
-        </div>
       </div>
       <div class="results-container">
         <h3>Results</h3>

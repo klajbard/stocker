@@ -9,14 +9,14 @@ import {
   TooltipItem,
 } from "chart.js";
 import { LitElement, html, css } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
 import { respondTo } from "./utils";
 
 Chart.register(ArcElement, DoughnutController, Legend, Tooltip);
 
 interface Portfolio {
   ticker: string;
-  price: string;
+  quote: string;
   amount: string;
 }
 
@@ -54,12 +54,12 @@ const chartConfig: ChartConfiguration<
             const value = parsed;
             const sum = dataset.data.reduce((a, b) => a + b, 0);
             const portion = ((value / sum) * 100).toFixed(1);
-            const price = new Intl.NumberFormat("en-US", {
+            const quote = new Intl.NumberFormat("en-US", {
               style: "currency",
               currency: "USD",
               maximumFractionDigits: 0,
             }).format(parsed);
-            return `${label} - ${portion}% - ${price}`;
+            return `${label} - ${portion}% - ${quote}`;
           },
         },
       },
@@ -72,10 +72,13 @@ export class PortfolioOverview extends LitElement {
   chart?: Chart;
   data: Portfolio[] = [];
   tickerElem?: HTMLInputElement | null;
-  priceElem?: HTMLInputElement | null;
+  quoteElem?: HTMLInputElement | null;
   amountElem?: HTMLInputElement | null;
   addElem?: HTMLButtonElement | null;
   sum: number;
+
+  @state()
+  private alreadyAdded?: boolean;
 
   constructor() {
     super();
@@ -120,6 +123,10 @@ export class PortfolioOverview extends LitElement {
         border-top: 1px solid var(--lighter-grey);
       }
 
+      table tr > td:first-of-type {
+        display: flex;
+      }
+
       table tr > *:not(:first-of-type) {
         width: 20%;
         padding: 0 0.5rem;
@@ -130,11 +137,20 @@ export class PortfolioOverview extends LitElement {
         text-align: start;
       }
 
-      .remove {
+      .action-button {
         padding: 0.3rem;
         background: none;
         border: none;
         cursor: pointer;
+        font-size: 1rem;
+      }
+
+      .action-button.clear {
+        color: var(--support-red);
+      }
+
+      .action-button.edit {
+        color: var(--support-blue);
       }
 
       .action-container {
@@ -182,32 +198,14 @@ export class PortfolioOverview extends LitElement {
     `;
   }
 
-  addData(label: string, data: number) {
-    if (!this.chart?.data.datasets) {
+  addData(label?: string, data?: number) {
+    if (!(this.chart?.data.datasets && label && data)) {
       return;
     }
-    const labelIndex =
-      this.chart?.data.labels?.findIndex((dataLabel) => dataLabel === label) ??
-      -1;
-    if (labelIndex > -1) {
-      (this.chart.data.datasets[0].data[labelIndex] as number) += data;
-    } else {
-      this.chart?.data.labels?.push(label);
-      this.chart?.data.datasets?.[0].data?.push(data);
-    }
+    this.chart?.data.labels?.push(label);
+    this.chart?.data.datasets?.[0].data?.push(data);
     this.sum = this.sum + data;
     this.chart?.update();
-  }
-
-  clearData() {
-    if (this.chart) {
-      this.chart.data.labels = [];
-      this.chart.data.datasets?.forEach((dataset) => {
-        dataset.data = [];
-      });
-      this.chart.update();
-    }
-    this.sum = 0;
   }
 
   firstUpdated() {
@@ -226,12 +224,12 @@ export class PortfolioOverview extends LitElement {
         this.data.push(portfolioElem);
         this.addData(
           portfolioElem.ticker,
-          parseFloat(portfolioElem.amount) * parseFloat(portfolioElem.price)
+          parseFloat(portfolioElem.amount) * parseFloat(portfolioElem.quote)
         );
       });
     }
     this.tickerElem = this.shadowRoot.querySelector("[name='ticker']");
-    this.priceElem = this.shadowRoot.querySelector("[name='price']");
+    this.quoteElem = this.shadowRoot.querySelector("[name='quote']");
     this.amountElem = this.shadowRoot.querySelector("[name='amount']");
     this.addElem = this.shadowRoot.querySelector("[name='add']");
   }
@@ -248,121 +246,167 @@ export class PortfolioOverview extends LitElement {
 
   _handleResetInputs() {
     if (this.tickerElem) this.tickerElem.value = null as any;
-    if (this.priceElem) this.priceElem.value = null as any;
+    if (this.quoteElem) this.quoteElem.value = null as any;
     if (this.amountElem) this.amountElem.value = null as any;
   }
 
   _handleInputUpdate() {
+    this.alreadyAdded = false;
     if (this.addElem) {
-      this.addElem.disabled = !(
-        this.tickerElem?.value &&
-        this.priceElem?.value &&
-        this.amountElem?.value
-      );
+      this.addElem.disabled = !this._isValid();
     }
   }
 
+  _isValid() {
+    return (
+      this.tickerElem?.value &&
+      this.quoteElem?.value &&
+      parseFloat(this.quoteElem?.value) &&
+      this.amountElem?.value &&
+      parseFloat(this.amountElem?.value)
+    );
+  }
+
   _handleClickAdd() {
-    if (
-      !this.tickerElem?.value ||
-      !this.priceElem?.value ||
-      !this.amountElem?.value
-    ) {
+    if (!this._isValid()) {
       return;
     }
-    this.data.push({
-      ticker: this.tickerElem.value,
-      price: this.priceElem.value,
-      amount: this.amountElem.value,
-    });
-    this.addData(
-      this.tickerElem.value,
-      parseFloat(this.amountElem?.value || "0") *
-        parseFloat(this.priceElem?.value || "0")
+    const item = this.data.find(
+      (elem) => elem.ticker === this.tickerElem?.value
     );
-    this._handleResetInputs();
-    this.saveDataToLS();
+
+    if (item) {
+      this.alreadyAdded = true;
+    } else {
+      this.data.push({
+        ticker: this.tickerElem?.value || "",
+        quote: this.quoteElem?.value || "",
+        amount: this.amountElem?.value || "",
+      });
+      this.addData(
+        this.tickerElem?.value,
+        parseFloat(this.amountElem?.value || "0") *
+          parseFloat(this.quoteElem?.value || "0")
+      );
+      this._handleResetInputs();
+      this.saveDataToLS();
+    }
   }
 
   saveDataToLS() {
     localStorage.setItem("portfolio", JSON.stringify(this.data));
   }
 
-  _handleClickClearLS() {
-    const dialogResult = confirm(`Remove all previously added data?`);
-    if (!dialogResult) {
-      return;
-    }
-    localStorage.removeItem("portfolio");
-    this.clearData();
-    this.shadowRoot?.querySelector(".table-container > table")?.remove();
-  }
-
   _handleRemoveClick =
-    (ticker: string, amount: string, price: string) => () => {
+    (ticker: string, amount: string, quote: string) => () => {
+      this.alreadyAdded = false;
       const dialogResult = confirm(
-        `Remove ${ticker} from list (quote: $${price}, amount: ${amount})?`
+        `Remove ${ticker} from list (quote: $${quote}, amount: ${amount})?`
       );
       if (!dialogResult) {
         return;
       }
       const indexToRemoveLS = this.data.findIndex(
-        (elem) =>
-          elem.ticker === ticker &&
-          elem.price === price &&
-          elem.amount === amount
+        (elem) => elem.ticker === ticker
       );
       if (indexToRemoveLS > -1) {
         this.data.splice(indexToRemoveLS, 1);
         this.saveDataToLS();
       }
       this.sum = this.data.reduce(
-        (acc, elem) => acc + parseFloat(elem.amount) * parseFloat(elem.price),
+        (acc, elem) => acc + parseFloat(elem.amount) * parseFloat(elem.quote),
         0
       );
 
       const indexToRemoveChart =
         this.chart?.data.labels?.findIndex((label) => label === ticker) ?? -1;
-
       if (indexToRemoveChart > -1) {
-        const totalPrice = parseFloat(amount) * parseFloat(price);
-        const elemTotalPrice = this.chart?.data.datasets[0].data[
-          indexToRemoveChart
-        ] as number;
-
-        if (elemTotalPrice > totalPrice && this.chart?.data.datasets) {
-          (this.chart.data.datasets[0].data[indexToRemoveChart] as number) -=
-            totalPrice;
-        } else {
-          this.chart?.data.labels?.splice(indexToRemoveChart, 1);
-          this.chart?.data.datasets?.[0].data?.splice(indexToRemoveChart, 1);
-        }
+        this.chart?.data.labels?.splice(indexToRemoveChart, 1);
+        this.chart?.data.datasets?.[0].data?.splice(indexToRemoveChart, 1);
         this.chart?.update();
       }
     };
 
-  renderTableRow({ ticker, amount, price }: Portfolio) {
-    const totalPrice = parseFloat(amount) * parseFloat(price);
+  _handleEditValue =
+    (ticker: string, type: "amount" | "quote", defaultValue: string) => () => {
+      const value = prompt(
+        `Edit ${type.toUpperCase()} of ${ticker}:`,
+        defaultValue
+      );
+      const newValue = parseFloat(value || "");
+
+      if (!newValue) {
+        return;
+      }
+
+      const elemToChangeLS = this.data.find((elem) => elem.ticker === ticker);
+      const delta = newValue - parseFloat(elemToChangeLS?.[type] || "0");
+      const deltaSum =
+        delta *
+        parseFloat(
+          elemToChangeLS?.[type === "amount" ? "quote" : "amount"] || "0"
+        );
+
+      if (elemToChangeLS) {
+        elemToChangeLS[type] = String(newValue);
+        this.saveDataToLS();
+        this.sum += deltaSum;
+      }
+
+      const elemIndexChart =
+        this.chart?.data.labels?.findIndex((label) => label === ticker) ?? -1;
+      if (elemIndexChart > -1 && this.chart?.data.datasets?.[0].data) {
+        const newData = this.chart.data.datasets[0].data.map((value, index) => {
+          if (index === elemIndexChart && typeof value === "number") {
+            return value + deltaSum;
+          }
+          return value;
+        });
+        this.chart.data.datasets[0].data = newData;
+        this.chart?.update();
+      }
+    };
+
+  _renderTableRow({ ticker, amount, quote }: Portfolio) {
+    const totalQuote = parseFloat(amount) * parseFloat(quote);
     return html`
       <tr>
         <td>
           <button
-            class="remove"
-            @click=${this._handleRemoveClick(ticker, amount, price)}
+            class="action-button clear"
+            @click=${this._handleRemoveClick(ticker, amount, quote)}
           >
-            &#x274c;
+            &#x2718;
           </button>
         </td>
         <td>${ticker}</td>
-        <td><em>${price}</em></td>
-        <td><em>${amount}</em></td>
-        <td><em>${totalPrice.toFixed(2)}</em></td>
-        <td><strong>${((totalPrice / this.sum) * 100).toFixed(2)}</strong></td>
+        <td>
+          <em>
+            ${quote}<button
+              class="action-button edit"
+              @click=${this._handleEditValue(ticker, "quote", quote)}
+            >
+              &#x270E;
+            </button></em
+          >
+        </td>
+        <td>
+          <em>
+            ${amount}<button
+              class="action-button edit"
+              @click=${this._handleEditValue(ticker, "amount", amount)}
+            >
+              &#x270E;
+            </button></em
+          >
+        </td>
+        <td><em>${totalQuote.toFixed(2)}</em></td>
+        <td><strong>${((totalQuote / this.sum) * 100).toFixed(2)}</strong></td>
       </tr>
     `;
   }
 
-  renderTable() {
+  _renderTable() {
     if (!this.data?.length) {
       return html``;
     }
@@ -376,9 +420,17 @@ export class PortfolioOverview extends LitElement {
           <th>Total ($)</th>
           <th>Weight (%)</th>
         </tr>
-        ${this.data.map((elem) => this.renderTableRow(elem))}
+        ${this.data.map((elem) => this._renderTableRow(elem))}
       </table>
     `;
+  }
+
+  _renderError() {
+    if (this.alreadyAdded) {
+      return html` Item already added! Please use edit to modify parameters! `;
+    }
+
+    return html``;
   }
 
   render() {
@@ -397,25 +449,23 @@ export class PortfolioOverview extends LitElement {
           right
         ></stocker-input>
         <stocker-input
-          label="Price"
-          name="price"
+          label="Quote"
+          name="quote"
           unit="$"
           type="number"
           right
         ></stocker-input>
         <div class="action-container">
-          <stocker-button name="clear" @click=${this._handleClickClearLS}>
-            Clear storage
-          </stocker-button>
           <stocker-button name="add" disabled @click=${this._handleClickAdd}
             >Add</stocker-button
           >
         </div>
+        ${this._renderError()}
       </div>
       <div class="chart-container">
         <canvas id="portfolio"></canvas>
       </div>
-      <div class="table-container">${this.renderTable()}</div>
+      <div class="table-container">${this._renderTable()}</div>
     `;
   }
 }
