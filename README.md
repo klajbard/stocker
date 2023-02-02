@@ -1,6 +1,6 @@
 # STOCKer
 
-Basic app to help stock tracking/sizing etc.
+Basic app to help stock tracking/sizing etc. (http://stocker.klajbar.com/)
 
 ## Position sizing
 
@@ -9,6 +9,8 @@ Based on given inputs it will calculate the right position size to buy.
 - Max Loss - The desired Max Loss on the trade in percentage
 - Entry price - Current price of the stock
 - Stop Loss Price - The maximum Stop Loss Price for the stock to close the position
+
+![position-sizing](./.github/stocker-position-sizing.png)
 
 ### Example
 
@@ -27,6 +29,8 @@ If this happens I'm **$2** below the initial price and I'm realizing **150 x $2 
 Simple tool to visualize the portfolio and show the current percentage.
 Must provide `Ticker`, `Amount`, `Quote` for each stock.
 Once stocks are provided it will create a pie chart and a table from the result data.
+
+![position-sizing](./.github/stocker-portfolio.png)
 
 ## Dependencies
 
